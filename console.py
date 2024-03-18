@@ -1,9 +1,9 @@
 #!/usr/bin/python3
-'''Console Module'''
-
+""" Console Module """
 import cmd
-import os
+from datetime import datetime
 import sys
+
 from models.base_model import BaseModel
 from models import storage
 from models.user import User
@@ -12,10 +12,13 @@ from models.state import State
 from models.city import City
 from models.amenity import Amenity
 from models.review import Review
+from shlex import split
+
+
 
 
 class HBNBCommand(cmd.Cmd):
-    '''Contains the functionality for the HBNB console'''
+    """ Contains the functionality for the HBNB console"""
 
     # determines prompt for interactive/non-interactive modes
     prompt = '(hbnb) ' if sys.__stdin__.isatty() else ''
@@ -33,16 +36,16 @@ class HBNBCommand(cmd.Cmd):
             }
 
     def preloop(self):
-        '''Prints if isatty is false'''
+        """Prints if isatty is false"""
         if not sys.__stdin__.isatty():
             print('(hbnb)')
 
     def precmd(self, line):
-        '''Reformat command line for advanced command syntax.
+        """Reformat command line for advanced command syntax.
 
         Usage: <class name>.<command>([<id> [<*args> or <**kwargs>]])
         (Brackets denote optional fields in usage example.)
-        '''
+        """
         _cmd = _cls = _id = _args = ''  # initialize line elements
 
         # scan for general formating - i.e '.', '(', ')'
@@ -89,88 +92,70 @@ class HBNBCommand(cmd.Cmd):
             return line
 
     def postcmd(self, stop, line):
-        '''Prints if isatty is false'''
+        """Prints if isatty is false"""
         if not sys.__stdin__.isatty():
             print('(hbnb) ', end='')
         return stop
 
     def do_quit(self, command):
-        '''Method to exit the HBNB console'''
-        return True
+        """ Method to exit the HBNB console"""
+        exit(0)
+
+    def help_quit(self):
+        """ Prints the help documentation for quit  """
+        print("Exits the program with formatting\n")
 
     def do_EOF(self, arg):
-        '''Handles EOF to exit program'''
-        print()
-        return True
+        """ Handles EOF to exit program """
+        exit(0)
+
+    def help_EOF(self):
+        """ Prints the help documentation for EOF """
+        print("Exits the program without formatting\n")
 
     def emptyline(self):
-        '''Overrides the emptyline method of CMD'''
-        pass
+        """ Overrides the emptyline method of CMD """
+        return False
 
-    @staticmethod
-    def parse_create_params(parameters):
-        '''Parse the parameters of `create` command'''
-        kwargs = {}
+    def do_create(self, arg):
+        """ Create an object of any class """
+        try:
+            if not arg:
+                raise SyntaxError()
+            cr_arg = arg.split(" ")
 
-        for p in parameters:
-            p = p.partition('=')
-
-            if p[0] == '' or p[1] != '=' or p[2] == '':
-                continue
-
-            name = p[0]
-            value = p[2]
-
-            if (value[0], value[-1]) == ('"', '"'):
-                value = value.strip('"').replace('_', ' ')
-                kwargs[name] = value
-            else:
-                try:
-                    if '.' in value:
-                        float_num = float(value)
-                    else:
-                        raise ValueError
-                    kwargs[name] = float_num
-                except ValueError:
+            args = {}
+            for cls in range(1, len(cr_arg)):
+                k, value = tuple(cr_arg[cls].split("="))
+                if value[0] == '"':
+                    value = value.strip('"').replace("_", " ")
+                else:
                     try:
-                        integer = int(value)
-                        kwargs[name] = integer
-                    except ValueError:
-                        pass
+                        value = eval(value)
+                    except (SyntaxError, NameError):
+                        continue
+                args[k] = value
 
-        return kwargs
+            if args == {}:
+                new_obj = eval(cr_arg[0])()
+            else:
+                new_obj = eval(cr_arg[0])(**args)
+                storage.new(new_obj)
+            print(new_obj.id)
+            new_obj.save()
 
-    def do_create(self, args):
-        '''Create an object of any class'''
-        if not args:
+        except SyntaxError:
             print("** class name missing **")
-            return
-
-        args = args.split()
-
-        _cl = args[0]
-        if _cl not in HBNBCommand.classes:
+        except NameError:
             print("** class doesn't exist **")
-            return
-
-        kwargs = {}
-
-        if len(args) > 1:
-            kwargs = self.parse_create_params(args[1:])
-
-        new_instance = HBNBCommand.classes[_cl]()
-        new_instance.__dict__.update(kwargs)
-
-        new_instance.save()
-        print(new_instance.id)
 
     def help_create(self):
-        '''Help information for the create method'''
+        """ Help information for the create method """
         print("Creates a class of any type")
         print("[Usage]: create <className>\n")
 
     def do_show(self, args):
-        '''Method to show an individual object'''
+        """ Method to show an individual object """
         new = args.partition(" ")
         c_name = new[0]
         c_id = new[2]
@@ -198,12 +183,12 @@ class HBNBCommand(cmd.Cmd):
             print("** no instance found **")
 
     def help_show(self):
-        '''Help information for the show command'''
+        """ Help information for the show command """
         print("Shows an individual instance of a class")
         print("[Usage]: show <className> <objectId>\n")
 
     def do_destroy(self, args):
-        '''Destroys a specified object'''
+        """ Destroys a specified object """
         new = args.partition(" ")
         c_name = new[0]
         c_id = new[2]
@@ -225,18 +210,18 @@ class HBNBCommand(cmd.Cmd):
         key = c_name + "." + c_id
 
         try:
-            obj_to_delete = storage.all()[key]
-            storage.delete(obj_to_delete)
+            storage.delete(storage.all()[key])
+            storage.save()
         except KeyError:
             print("** no instance found **")
 
     def help_destroy(self):
-        '''Help information for the destroy command'''
+        """ Help information for the destroy command """
         print("Destroys an individual instance of a class")
         print("[Usage]: destroy <className> <objectId>\n")
 
     def do_all(self, args):
-        '''Shows all objects, or all objects of a class'''
+        """ Shows all objects, or all objects of a class"""
         print_list = []
 
         if args:
@@ -254,12 +239,12 @@ class HBNBCommand(cmd.Cmd):
         print(print_list)
 
     def help_all(self):
-        '''Help information for the all command'''
+        """ Help information for the all command """
         print("Shows all objects, or all of a class")
         print("[Usage]: all <className>\n")
 
     def do_count(self, args):
-        '''Count current number of class instances'''
+        """Count current number of class instances"""
         count = 0
         for k, v in storage.all().items():
             if args == k.split('.')[0]:
@@ -267,11 +252,11 @@ class HBNBCommand(cmd.Cmd):
         print(count)
 
     def help_count(self):
-        ''''''
+        """ """
         print("Usage: count <class_name>")
 
     def do_update(self, args):
-        '''Updates a certain object with new info'''
+        """ Updates a certain object with new info """
         c_name = c_id = att_name = att_val = kwargs = ''
 
         # isolate cls from id/args, ex: (<cls>, delim, <id/args>)
@@ -354,7 +339,7 @@ class HBNBCommand(cmd.Cmd):
         new_dict.save()  # save updates to file
 
     def help_update(self):
-        '''Help information for the update class'''
+        """ Help information for the update class """
         print("Updates an object with new information")
         print("Usage: update <className> <id> <attName> <attVal>\n")
 
