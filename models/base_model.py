@@ -1,51 +1,80 @@
 #!/usr/bin/python3
-"""Defines the BaseModel class."""
-import models
-from uuid import uuid4
+"""This module defines a base class for all models in our hbnb clone"""
+import uuid
 from datetime import datetime
+from sqlalchemy import Table, Column, Integer, String, Numeric, DateTime
+from sqlalchemy.ext.declarative import declarative_base
+
+Base = declarative_base()
 
 
 class BaseModel:
-    """Represents the BaseModel of the HBnB project."""
+    """A base class for all hbnb models"""
 
-    def __init__(own, *args, **kwargs):
-        """Initialize a new BaseModel.
+    id = Column(
+        String(60),
+        unique=True,
+        nullable=False,
+        primary_key=True
+    )
+    created_at = Column(
+        DateTime(),
+        nullable=False,
+        default=datetime.utcnow()
+    )
+    updated_at = Column(
+        DateTime(),
+        nullable=False,
+        default=datetime.utcnow()
+    )
 
-        Args:
-            *args (any): Unused.
-            **kwargs (dict): Key/value pairs of attributes.
-        """
-        test_form = "%Y-%m-%dT%H:%M:%S.%f"
-        own.id = str(uuid4())
-        own.created_at = datetime.today()
-        own.updated_at = datetime.today()
-        if len(kwargs) != 0:
-            for k, v in kwargs.items():
-                if k == "created_at" or k == "updated_at":
-                    own.__dict__[k] = datetime.strptime(v, test_form)
-                else:
-                    own.__dict__[k] = v
+    def __init__(self, *args, **kwargs):
+        """Instatntiates a new model"""
+
+        if (not kwargs or 'id' not in kwargs):
+            from models import storage
+            self.id = str(uuid.uuid4())
+            self.created_at = datetime.now()
+            self.updated_at = datetime.now()
+
+            if kwargs:
+                for k, v in kwargs.items():
+                    setattr(self, k, v)
         else:
-            models.storage.new(own)
+            kwargs['updated_at'] = datetime.strptime(kwargs['updated_at'],
+                                                     '%Y-%m-%dT%H:%M:%S.%f')
+            kwargs['created_at'] = datetime.strptime(kwargs['created_at'],
+                                                     '%Y-%m-%dT%H:%M:%S.%f')
+            del kwargs['__class__']
+            self.__dict__.update(kwargs)
 
-    def save(own):
-        """Update updated_at with the current datetime."""
-        own.updated_at = datetime.today()
-        models.storage.save()
+    def __str__(self):
+        """Returns a string representation of the instance"""
+        cls = (str(type(self)).split('.')[-1]).split('\'')[0]
 
-    def to_dict(own):
-        """Return the dictionary of the BaseModel instance.
+        return '[{}] ({}) {}'.format(cls, self.id, self.__dict__)
 
-        Includes the key/value pair __class__ representing
-        the class name of the object.
-        """
-        rdi = own.__dict__.copy()
-        rdi["created_at"] = own.created_at.isoformat()
-        rdi["updated_at"] = own.updated_at.isoformat()
-        rdi["__class__"] = own.__class__.__name__
-        return rdi
+    def save(self):
+        """Updates updated_at with current time when instance is changed"""
+        from models import storage
+        self.updated_at = datetime.now()
+        storage.new(self)
+        storage.save()
 
-    def __str__(own):
-        """Return the print/str representation of the BaseModel instance."""
-        clname = own.__class__.__name__
-        return "[{}] ({}) {}".format(clname, own.id, own.__dict__)
+    def delete(self):
+        """ Delete the current instance from storage """
+        storage.delete()
+
+    def to_dict(self):
+        """Convert instance into dict format"""
+        dictionary = {}
+        dictionary.update(self.__dict__)
+        dictionary.update({'__class__':
+                          (str(type(self)).split('.')[-1]).split('\'')[0]})
+
+        if dictionary.get('_sa_instance_state'):
+            dictionary.pop('_sa_instance_state')
+        dictionary['created_at'] = self.created_at.isoformat()
+        dictionary['updated_at'] = self.updated_at.isoformat()
+
+        return dictionary
