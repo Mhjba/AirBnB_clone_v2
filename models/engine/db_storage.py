@@ -1,9 +1,7 @@
 #!/usr/bin/python3
 """This module defines a class to manage database storage for hbnb clone"""
-from os import getenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
-
 from models.base_model import BaseModel, Base
 from models.state import State
 from models.city import City
@@ -11,12 +9,15 @@ from models.user import User
 from models.place import Place, place_amenity
 from models.amenity import Amenity
 from models.review import Review
+from os import getenv
 
 
 class DBStorage:
     """This class manages storage of hbnb models in a SQL database"""
     __engine = None
     __session = None
+    o_dct = dict()
+    my_cls = (User, State, City, Amenity, Place, Review)
 
     def __init__(self):
         """Initializes the SQL database storage"""
@@ -32,21 +33,21 @@ class DBStorage:
             Base.metadata.drop_all(self.__engine)
 
     def all(self, cls=None):
-        """Returns a dictionary of models currently in storage"""
-        objects = dict()
-        all_classes = (User, State, City, Amenity, Place, Review)
+        """Method to return a dictionary of objects"""
+        my_cls = {}
+        o_dct = {}
         if cls is None:
-            for class_type in all_classes:
+            for class_type in my_cls:
                 query = self.__session.query(class_type)
                 for obj in query.all():
-                    obj_key = '{}.{}'.format(obj.__class__.__name__, obj.id)
-                    objects[obj_key] = obj
+                    key = '{}.{}'.format(obj.__class__.__name__, obj.id)
+                    o_dct[key] = obj
         else:
             query = self.__session.query(cls)
             for obj in query.all():
-                obj_key = '{}.{}'.format(obj.__class__.__name__, obj.id)
-                objects[obj_key] = obj
-        return objects
+                key = '{}.{}'.format(obj.__class__.__name__, obj.id)
+                o_dct[key] = obj
+        return o_dct
 
 
     def new(self, obj):
@@ -54,7 +55,7 @@ class DBStorage:
         self.__session.add(obj)
 
     def reload(self):
-        """Method to create the current database session"""
+        """Loads storage database"""
         Base.metadata.create_all(self.__engine)
         session_factory = sessionmaker(bind=self.__engine,
                                        expire_on_commit=False)
@@ -66,7 +67,7 @@ class DBStorage:
         self.__session.commit()
 
     def delete(self, obj=None):
-        """Method to delete a new object to the current database"""
+        """Commits the session changes to database"""
         self.__session.delete(obj)
 
     def close(self):
