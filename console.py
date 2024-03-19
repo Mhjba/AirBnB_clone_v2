@@ -1,9 +1,8 @@
 #!/usr/bin/python3
 """ Console Module """
 import cmd
-from datetime import datetime
 import sys
-
+from datetime import datetime
 from models.base_model import BaseModel
 from models import storage
 from models.user import User
@@ -13,8 +12,6 @@ from models.city import City
 from models.amenity import Amenity
 from models.review import Review
 from shlex import split
-
-
 
 
 class HBNBCommand(cmd.Cmd):
