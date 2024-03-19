@@ -51,7 +51,7 @@ class DBStorage:
 
     def new(self, obj):
         """Method to add a new object to the current database"""
-        DBStorage.__session.add(obj)
+        self.__session.add(obj)
 
     def reload(self):
         """Method to create the current database session"""
@@ -59,18 +59,15 @@ class DBStorage:
         session_factory = sessionmaker(bind=self.__engine,
                                        expire_on_commit=False)
         Session = scoped_session(session_factory)
-        DBStorage.__session = Session()
+        self.__session = Session()
 
     def save(self):
         """Commits the session changes to database"""
         self.__session.commit()
 
     def delete(self, obj=None):
-        """Removes an object from the storage database"""
-        if obj is not None:
-            self.__session.query(type(obj)).filter(
-                type(obj).id == obj.id).delete(
-                synchronize_session=False)
+        """Method to delete a new object to the current database"""
+        self.__session.delete(obj)
 
     def close(self):
         """Closes the storage engine."""
