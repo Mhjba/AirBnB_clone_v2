@@ -3,49 +3,65 @@
 import models
 from uuid import uuid4
 from datetime import datetime
+from sqlalchemy import Column, DateTime, String
+from sqlalchemy.ext.declarative import declarative_base
+
+Base = declarative_base()
 
 
 class BaseModel:
-    """Represents the BaseModel of the HBnB project."""
+    """Defines the BaseModel class."""
 
-    def __init__(own, *args, **kwargs):
-        """Initialize a new BaseModel.
+    id = Column(String(60), nullable=False, primary_key=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow())
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow(),
+                        onupdate=datetime.utcnow())
 
-        Args:
-            *args (any): Unused.
-            **kwargs (dict): Key/value pairs of attributes.
-        """
-        test_form = "%Y-%m-%dT%H:%M:%S.%f"
-        own.id = str(uuid4())
-        own.created_at = datetime.today()
-        own.updated_at = datetime.today()
-        if len(kwargs) != 0:
-            for k, v in kwargs.items():
-                if k == "created_at" or k == "updated_at":
-                    own.__dict__[k] = datetime.strptime(v, test_form)
-                else:
-                    own.__dict__[k] = v
+    def __init__(self, *args, **kwargs):
+        """Instantiates a new model"""
+        if not kwargs:
+            self.id = str(uuid4())
+            self.created_at = datetime.now()
+            self.updated_at = datetime.now()
         else:
-            models.storage.new(own)
+            for k, value in kwargs.items():
+                if k != '__class__':
+                    if k in ('created_at', 'updated_at'):
+                        setattr(self, k, datetime.fromisoformat(value))
+                    else:
+                        setattr(self, k, value)
+            if not hasattr(kwargs, 'id'):
+                setattr(self, 'id', str(uuid4()))
+            if not hasattr(kwargs, 'created_at'):
+                setattr(self, 'created_at', datetime.now())
+            if not hasattr(kwargs, 'updated_at'):
+                setattr(self, 'updated_at', datetime.now())
 
-    def save(own):
+    def __str__(self):
+        '''Returns a string representation of the instance'''
+        cls = (str(type(self)).split('.')[-1]).split('\'')[0]
+        return '[{}] ({}) {}'.format(cls, self.id, self.__dict__)
+
+    def save(self):
         """Update updated_at with the current datetime."""
-        own.updated_at = datetime.today()
+        self.updated_at = datetime.now()
+        models.storage.new(self)
         models.storage.save()
 
-    def to_dict(own):
-        """Return the dictionary of the BaseModel instance.
+    def to_dict(self):
+        '''Convert instance into dict format'''
+        dictionary = {}
+        dictionary.update(self.__dict__)
+        dictionary.update({'__class__':
+                          (str(type(self)).split('.')[-1]).split('\'')[0]})
+        dictionary['created_at'] = self.created_at.isoformat()
+        dictionary['updated_at'] = self.updated_at.isoformat()
 
-        Includes the key/value pair __class__ representing
-        the class name of the object.
-        """
-        rdi = own.__dict__.copy()
-        rdi["created_at"] = own.created_at.isoformat()
-        rdi["updated_at"] = own.updated_at.isoformat()
-        rdi["__class__"] = own.__class__.__name__
-        return rdi
+        if '_sa_instance_state' in dictionary:
+            del dictionary['_sa_instance_state']
 
-    def __str__(own):
-        """Return the print/str representation of the BaseModel instance."""
-        clname = own.__class__.__name__
-        return "[{}] ({}) {}".format(clname, own.id, own.__dict__)
+        return dictionary
+    
+    def delete(self):
+        """Delete the current instance from storage."""
+        models.storage.delete(self)
