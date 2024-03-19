@@ -16,8 +16,6 @@ class DBStorage:
     """This class manages storage of hbnb models in a SQL database"""
     __engine = None
     __session = None
-    o_dct = dict()
-    my_cls = (User, State, City, Amenity, Place, Review)
 
     def __init__(self):
         """Initializes the SQL database storage"""
@@ -34,8 +32,8 @@ class DBStorage:
 
     def all(self, cls=None):
         """Method to return a dictionary of objects"""
-        my_cls = {}
-        o_dct = {}
+        o_dct = dict()
+        my_cls = (User, State, City, Amenity, Place, Review)
         if cls is None:
             for class_type in my_cls:
                 query = self.__session.query(class_type)
@@ -48,7 +46,6 @@ class DBStorage:
                 key = '{}.{}'.format(obj.__class__.__name__, obj.id)
                 o_dct[key] = obj
         return o_dct
-
 
     def new(self, obj):
         """Method to add a new object to the current database"""
