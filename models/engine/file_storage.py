@@ -10,16 +10,13 @@ class FileStorage:
 
     def all(self, cls=None):
         """Returns a dictionary of models currently in storage"""
-        filtered_objs = {}
-
-        if cls:
-            for key, obj in self.__objects.items():
-                if isinstance(obj, cls):
-                    filtered_objs[key] = obj
-
-            return filtered_objs
-        else:
+        if cls is None:
             return FileStorage.__objects
+        all_dict = {}
+        for k, value in FileStorage.__objects.items():
+            if isinstance(value, cls):
+                all_dict[k] = value
+        return all_dict
 
     def new(self, obj):
         """Adds new object to storage dictionary"""
@@ -30,24 +27,9 @@ class FileStorage:
         with open(FileStorage.__file_path, 'w') as f:
             temp = {}
             temp.update(FileStorage.__objects)
-
             for key, val in temp.items():
                 temp[key] = val.to_dict()
             json.dump(temp, f)
-
-    def close(self):
-        """"""
-        self.reload()
-
-    def delete(self, obj=None):
-        """ Delete obj from storage"""
-
-        if obj:
-            for key in self.__objects.keys():
-                if obj == self.__objects[key]:
-                    self.__objects.pop(key)
-
-                    break
 
     def reload(self):
         """Loads storage dictionary from file"""
@@ -68,8 +50,18 @@ class FileStorage:
             temp = {}
             with open(FileStorage.__file_path, 'r') as f:
                 temp = json.load(f)
-
                 for key, val in temp.items():
-                    self.all()[key] = classes[val['__class__']](**val)
+                        self.all()[key] = classes[val['__class__']](**val)
         except FileNotFoundError:
             pass
+
+    def delete(self, obj=None):
+        """Removes an object from the storage dictionary"""
+        if obj is not None:
+            obj_key = obj.to_dict()['__class__'] + '.' + obj.id
+            if obj_key in self.__objects.keys():
+                del self.__objects[obj_key]
+
+    def close(self):
+        """Closes the storage engine."""
+        self.reload()
