@@ -3,7 +3,6 @@ i#!/usr/bin/python3
 from os import getenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
-import urllib.parse
 from models.base_model import BaseModel, Base
 from models.state import State
 from models.city import City
@@ -34,7 +33,7 @@ class DBStorage:
     def all(self, cls=None):
         """Returns a dictionary of models currently in storage"""
         objects = dict()
-        all_classes = ()
+        all_classes = (User, State, City, Amenity, Place, Review)
         if cls is None:
             for class_type in all_classes:
                 query = self.__session.query(class_type)
