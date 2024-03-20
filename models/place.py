@@ -39,9 +39,20 @@ class Place(BaseModel, Base):
             'Amenity', secondary=place_amenity, viewonly=False,
             backref='place_amenities')
     else:
+        city_id = ''
+        user_id = ''
+        name = ''
+        description = ''
+        number_rooms = 0
+        number_bathrooms = 0
+        max_guest = 0
+        price_by_night = 0
+        latitude = 0.0
+        longitude = 0.0
+        amenity_ids = []
         @property
         def reviews(self):
-            '''FileStorage relationship between Place and Review'''
+            """Retrieve all reviews associated with this place """
             from models import storage
             from models.review import Review
 
@@ -54,18 +65,12 @@ class Place(BaseModel, Base):
 
         @property
         def amenities(self):
-            '''
-            Returns the list of `Amenity` instances
-            based on the attribute `amenity_ids` that
-            contains all `Amenity.id` linked to the Place
-            '''
+            """ Contains all Amenity """
             return self.amenity_ids
 
         @amenities.setter
         def amenities(self, obj=None):
-            '''
-            handles append method for adding an
-            Amenity.id to the attribute amenity_ids
-            '''
+            """ handles append method Amenitys """
+
             if type(obj) is Amenity and obj.id not in self.amenity_ids:
                 self.amenity_ids.append(obj.id)
