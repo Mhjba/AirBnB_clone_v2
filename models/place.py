@@ -3,8 +3,8 @@
 from models.base_model import BaseModel, Base
 from sqlalchemy import Column, String, Integer, Float, ForeignKey, Table
 from sqlalchemy.orm import relationship
-from os import getenv
 from models.amenity import Amenity
+import os
 
 place_amenity = Table('place_amenity', Base.metadata, Column('place_id', String(60),
                              ForeignKey('places.id'),
@@ -12,6 +12,7 @@ place_amenity = Table('place_amenity', Base.metadata, Column('place_id', String(
                              ForeignKey('amenities.id'),
                              primary_key=True, nullable=False),
                              )
+
 
 class Place(BaseModel, Base):
     """ A place to stay """
@@ -29,7 +30,7 @@ class Place(BaseModel, Base):
     longitude = Column(Float, nullable=True)
     amenity_ids = []
 
-    if getenv('HBNB_TYPE_STORAGE') == 'db':
+    if os.getenv('HBNB_TYPE_STORAGE') == 'db':
         reviews = relationship(
             'Review', cascade='all, delete', backref='place')
         amenities = relationship(
@@ -53,12 +54,12 @@ class Place(BaseModel, Base):
             from models import storage
             from models.review import Review
 
-            review_list = []
-            review_dict = storage.all(Review)
-            for review in review_dict.values():
+            my_list = []
+            my_dict = storage.all(Review)
+            for review in my_dict.values():
                 if review.place_id == self.id:
-                    review_list.append(review)
-            return review_list
+                    my_list.append(review)
+            return my_list
 
         @property
         def amenities(self):
@@ -66,8 +67,7 @@ class Place(BaseModel, Base):
             return self.amenity_ids
 
         @amenities.setter
-        def amenities(self, obj=None):
-            """ handles append method Amenitys """
-
-            if type(obj) is Amenity and obj.id not in self.amenity_ids:
-                self.amenity_ids.append(obj.id)
+        def amenities(self, obj):
+            """ Retrieve all reviews associated with this place """
+            if isinstance(obj, 'Amenity'):
+                self.amenity_id.append(obj.id)
