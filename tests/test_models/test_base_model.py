@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-""" """
+"""Unit tests for the BaseModel class."""
 from models.base_model import BaseModel
 import unittest
 import datetime
@@ -9,7 +9,7 @@ import os
 
 
 class test_basemodel(unittest.TestCase):
-    """ """
+    """Test cases for the BaseModel class. """
 
     def __init__(self, *args, **kwargs):
         """ """
@@ -18,7 +18,7 @@ class test_basemodel(unittest.TestCase):
         self.value = BaseModel
 
     def setUp(self):
-        """ """
+        """Set up test fixtures. """
         pass
 
     def tearDown(self):
@@ -28,12 +28,12 @@ class test_basemodel(unittest.TestCase):
             pass
 
     def test_default(self):
-        """ """
+        """Test the creation of a default BaseModel instance. """
         i = self.value()
         self.assertEqual(type(i), self.value)
 
     def test_kwargs(self):
-        """ """
+        """Test the creation of a BaseModel instance with **kwargs. """
         i = self.value()
         copy = i.to_dict()
         new = BaseModel(**copy)
@@ -86,12 +86,12 @@ class test_basemodel(unittest.TestCase):
         self.assertEqual(type(new.id), str)
 
     def test_created_at(self):
-        """ """
+        """Test the created_at attribute. """
         new = self.value()
         self.assertEqual(type(new.created_at), datetime.datetime)
 
     def test_updated_at(self):
-        """ """
+        """Test the updated_at attribute. """
         new = self.value()
         self.assertEqual(type(new.updated_at), datetime.datetime)
         n = new.to_dict()

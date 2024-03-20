@@ -5,7 +5,7 @@ from models.user import User
 
 
 class test_User(test_basemodel):
-    """ """
+    """Test cases for the User class. """
 
     def __init__(self, *args, **kwargs):
         """ """
@@ -14,12 +14,12 @@ class test_User(test_basemodel):
         self.value = User
 
     def test_first_name(self):
-        """ """
+        """Test cases for the User class. """
         new = self.value()
         self.assertEqual(type(new.first_name), str)
 
     def test_last_name(self):
-        """ """
+        """Test the type of the last_name attribute. """
         new = self.value()
         self.assertEqual(type(new.last_name), str)
 
@@ -29,6 +29,6 @@ class test_User(test_basemodel):
         self.assertEqual(type(new.email), str)
 
     def test_password(self):
-        """ """
+        """Test the type of the password attribute."""
         new = self.value()
         self.assertEqual(type(new.password), str)

@@ -1,11 +1,13 @@
 #!/usr/bin/python3
-""" """
+"""Unit tests for the Amenity class. """
+
+
 from tests.test_models.test_base_model import test_basemodel
 from models.amenity import Amenity
 
 
 class test_Amenity(test_basemodel):
-    """ """
+    """Test cases for the Amenity class. """
 
     def __init__(self, *args, **kwargs):
         """ """
