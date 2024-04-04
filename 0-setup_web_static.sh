@@ -1,26 +1,26 @@
 #!/usr/bin/env bash
+# Setting up servers with web static files
 
-# Install Nginx if not already installed
-if ! command -v nginx &> /dev/null; then
-    sudo apt-get update
-    sudo apt-get install -y nginx
+if ! dpkg -l | grep -q nginx; then
+	sudo apt-get update
+	sudo apt-get install nginx -y
 fi
 
-# Create necessary directories
-sudo mkdir -p /data/web_static/releases/test
-sudo mkdir -p /data/web_static/shared
+sudo mkdir -p '/data/web_static/releases/test/'
+sudo mkdir -p '/data/web_static/shared/'
 
-# Create a fake HTML file for testing
-echo "<html><head></head><body>H</body></html>" | sudo tee /data/web_static/releases/test/index.html > /dev/null
+echo "<h1>Index Test</h1>" | sudo tee '/data/web_static/releases/test/index.html' > /dev/null
+sudo ln -sf '/data/web_static/releases/test/' '/data/web_static/current'
+sudo chown -R ubuntu:ubuntu '/data/'
 
-# Create symbolic link
-sudo ln -sf /data/web_static/releases/test /data/web_static/current
+printf "server {
+	listen 80 default_server;
+	listen [::]:80 default_server;
 
-# Set ownership recursively
-sudo chown -R ubuntu:ubuntu /data/
-
-# Update Nginx configuration
-sudo sed -i '/server_name _;/a \\n\tlocation /hbnb_static/ {\n\t\talias /data/web_static/current/;\n\t}\n' /etc/nginx/sites-available/default
-
-# Restart Nginx
+	location /hbnb_static {
+		alias /data/web_static/current/;
+		index index.html;
+	}
+}
+" | sudo tee "/etc/nginx/sites-available/default" > /dev/null
 sudo service nginx restart
