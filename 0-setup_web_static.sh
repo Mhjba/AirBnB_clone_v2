@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-
 # Install Nginx if not already installed
+
 if ! dpkg -l | grep -q nginx; then
 	sudo apt-get update
 	sudo apt-get install nginx -y
@@ -9,6 +9,7 @@ fi
 # Create necessary directories
 sudo mkdir -p '/data/web_static/releases/test/'
 sudo mkdir -p '/data/web_static/shared/'
+
 # Create a fake HTML file for testing
 echo "<h1>Index Test</h1>" | sudo tee '/data/web_static/releases/test/index.html' > /dev/null
 # Create symbolic link
@@ -29,3 +30,4 @@ printf "server {
 " | sudo tee "/etc/nginx/sites-available/default" > /dev/null
 # Restart Nginx
 sudo service nginx restart
+
