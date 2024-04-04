@@ -6,7 +6,7 @@ from os.path import exists
 from os.path import isdir
 from datetime import datetime
 
-env.hosts = ["54.235.193.23", "	54.209.125.126"]
+env.hosts = ["54.157.32.137", "52.55.249.213"]
 
 
 def do_pack():
