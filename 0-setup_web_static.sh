@@ -1,18 +1,22 @@
 #!/usr/bin/env bash
-# Setting up servers with web static files
 
-if ! dpkg -l | grep -q nginx; then
+# Install Nginx if not already installed
+if ! command -v | grep -q nginx; then
 	sudo apt-get update
 	sudo apt-get install nginx -y
 fi
 
+# Create necessary directories
 sudo mkdir -p '/data/web_static/releases/test/'
 sudo mkdir -p '/data/web_static/shared/'
-
+# Create a fake HTML file for testing
 echo "<h1>Index Test</h1>" | sudo tee '/data/web_static/releases/test/index.html' > /dev/null
-sudo ln -sf '/data/web_static/releases/test/' '/data/web_static/current'
+# Create symbolic link
+sudo ln -sf /data/web_static/releases/test /data/web_static/current
+# Set ownership recursively
 sudo chown -R ubuntu:ubuntu '/data/'
 
+# Update Nginx configuration
 printf "server {
 	listen 80 default_server;
 	listen [::]:80 default_server;
@@ -23,4 +27,5 @@ printf "server {
 	}
 }
 " | sudo tee "/etc/nginx/sites-available/default" > /dev/null
+# Restart Nginx
 sudo service nginx restart
