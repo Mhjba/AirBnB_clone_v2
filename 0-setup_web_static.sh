@@ -12,7 +12,7 @@ sudo mkdir -p '/data/web_static/shared/'
 # Create a fake HTML file for testing
 echo "<h1>Index Test</h1>" | sudo tee '/data/web_static/releases/test/index.html' > /dev/null
 # Create symbolic link
-sudo ln -sf /data/web_static/releases/test /data/web_static/current
+sudo ln -sf '/data/web_static/releases/test/' '/data/web_static/current'
 # Set ownership recursively
 sudo chown -R ubuntu:ubuntu '/data/'
 
