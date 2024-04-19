@@ -19,7 +19,7 @@ def hbnb():
 
 
 @app.route("/c/<text>", strict_slashes=False)
-def c(text):
+def c_text(text):
 	""" display C (text) """
     text = text.replace("_", " ")
     return "C {}".format(text)
@@ -27,24 +27,23 @@ def c(text):
 
 @app.route("/python", strict_slashes=False)
 @app.route("/python/<text>", strict_slashes=False)
-def python(text="is cool"):
+def python_text(text="is cool"):
 	""" display Python (text) """
     text = text.replace("_", " ")
     return "Python {}".format(text)
 
 
-@app.route('/number/<int:n>')
+@app.route("/number/<int:n>", strict_slashes=False)
 def number(n):
     """ display n is a number """
-    n = str(n)
-    return '{} is a number'.format(n)
+    return "{} is a number".format(n)
 
 
-@app.route('/number_template/<int:n>', strict_slashes=False)
+@app.route("/number_template/<int:n>", strict_slashes=False)
 def number_template(n):
     """  display a HTML page """
-    return render_template('5-number.html', n=n)
+    return render_template("5-number.html", n=n)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
