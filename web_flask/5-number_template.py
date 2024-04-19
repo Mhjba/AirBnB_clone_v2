@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+
 """ start a flask web app  """
 
 from flask import Flask
